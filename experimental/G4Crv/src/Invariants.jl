@@ -26,7 +26,7 @@ function g4_invariants(Q::MPolyRingElem{T}, Gamma::MPolyRingElem{T} , normalize:
 		t = 3
 	else
 		P, t = quad_4_normal_form(Q)
-		f0 = cubic_new_basis(Gamma, P)
+		f0 = transformation_GLn(Gamma, P)
 	end
 
 	# Rank 4 case
@@ -100,6 +100,32 @@ function transvectant(f::MPolyRingElem{T}, g::MPolyRingElem{T}, r::Int, s::Int, 
   else
     return Tfg
   end
+end
+
+
+function transvectant_sequence(Fs::Vector{S}, k::Int) where S <: Union{ZZMPolyRingElem, MPolyRingElem}
+  R = parent(Fs[1])
+  K = base_ring(R)
+  n = number_of_generators(R)
+  @req n == length(Fs) "Number of Fs needs to be equal to the number of variables."
+  RX, X = polynomial_ring(K, n^2)
+  M = matrix(RX, n, n, X)
+  symbolic_transvectant = det(M)
+  results = MPolyRingElem[]
+  F_prod = prod([Fs[i](X[n*i-n+1:n*i]...) for i in (1:n)])
+  F, Y = polynomial_ring(K, n)
+  nY = repeat(Y, n)
+  for j in (1:k)
+    result = zero(RX)
+    for term in terms(symbolic_transvectant)
+      c, E = collect(coefficients_and_exponents(term))[1]
+      result_term = c*derivative(F_prod, E)
+      result += result_term
+    end
+    F_prod = result
+    push!(results, F_prod(nY...))
+  end
+  return results
 end
 
 function quadratic_form_to_matrix(f::MPolyRingElem{T}) where T <: FieldElem
@@ -204,11 +230,12 @@ function quad_4_normal_form(Q::MPolyRingElem{T}) where T
   end
 end
 
-function cubic_new_basis(Gamma::MPolyRingElem{T}, P::MatElem{S}) where {T, S} 
-  #/* Given a cubic form Gamma and a matrix P, apply the transformation P to Gamma. */
+function transformation_GLn(Gamma::MPolyRingElem{T}, P::MatElem{S}) where {T, S} 
+  #/* Given a n-ary form Gamma and an nxn matrix P, apply the transformation P to Gamma. */
   K = base_ring(P)
-  Rxyzw, (x, y, z, w) = polynomial_ring(K, 4)
-  v = Vector([x,y,z,w])
+  RX = parent(Gamma)
+  X = gens(RX)
+  v = Vector(X)
   vX = collect(P * v)
   return Gamma(vX...)
 end

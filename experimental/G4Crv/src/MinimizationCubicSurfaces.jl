@@ -1,6 +1,3 @@
-
-
-
 function minimize_and_reduce_cubic_surface(cubic::MPolyRingElem{T}) where T <:Union{QQFieldElem, ZZRingElem}
   
   mu = lcm(map(denominator, collect(coefficients(cubic))))
@@ -71,7 +68,7 @@ function try_minimize_cubic_at_p(cubic, p)
   success, M = weight0001(cubic_p)
 
   if success
-    cubic_base_change = cubic_new_basis(cubic, transpose(M))
+    cubic_base_change = transformation_GLn(cubic, transpose(M))
     c = content(cubic_base_change)
     @req divides(c, p)[1] "There is an error in minimization of cubic surfaces."
     cubic = cubic_base_change/c
@@ -80,7 +77,7 @@ function try_minimize_cubic_at_p(cubic, p)
 
   success, M = weight0011(cubic_p)
   if success
-    cubic_base_change = cubic_new_basis(cubic, transpose(M))
+    cubic_base_change = transformation_GLn(cubic, transpose(M))
     c = content(cubic_base_change)
     @req divides(c, p)[1] "There is an error in minimization of cubic surfaces."
     if divides(c, p^2)[1]
@@ -97,7 +94,7 @@ function try_minimize_cubic_at_p(cubic, p)
     M = [M ; p*identity_matrix(ZZ, 4)]
     hnf!(M)
     M = M[1:4,:]
-    cubic_base_change = cubic_new_basis(cubic, transpose(M))
+    cubic_base_change = transformation_GLn(cubic, transpose(M))
     c = content(cubic_base_change)
     if divides(c, p^3)[1]
       cubic = cubic_base_change/c
@@ -217,7 +214,7 @@ function weight0122_and0223(cubic_temp, p)
       M = [M ; p*identity_matrix(ZZ, 4)]
       hnf!(M)
       M = M[1:4,:]
-      cubic_base_change = cubic_new_basis(cubic_temp, transpose(M))
+      cubic_base_change = transformation_GLn(cubic_temp, transpose(M))
       c = content(cubic_base_change)
       if divides(c, p^2)[1]
         cubic_temp = cubic_base_change/c
@@ -234,7 +231,7 @@ function weight0122_and0223(cubic_temp, p)
       M = [M ; p*identity_matrix(ZZ, 4)]
       hnf!(M)
       M = M[1:4,:]
-      cubic_base_change = cubic_new_basis(cubic_temp, transpose(M))
+      cubic_base_change = transformation_GLn(cubic_temp, transpose(M))
       c = content(cubic_base_change)
       if divides(c, p^2)[1]
         cubic_temp = cubic_base_change/c
@@ -245,7 +242,7 @@ function weight0122_and0223(cubic_temp, p)
         success, M = weight0001(cubic_p)
 
         if success
-          cubic_base_change = cubic_new_basis(cubic, transpose(M))
+          cubic_base_change = transformation_GLn(cubic, transpose(M))
           c = content(cubic_base_change)
           @req divides(c, p)[1] "There is an error in minimization of cubic surfaces."
           cubic = cubic_base_change/c
@@ -275,7 +272,7 @@ function weight0122_and0223(cubic_temp, p)
         M = [M ; p*identity_matrix(ZZ, 4)]
         hnf!(M)
         M = M[1:4,:]
-        cubic_base_change = cubic_new_basis(cubic, transpose(M))
+        cubic_base_change = transformation_GLn(cubic, transpose(M))
         c = content(cubic_base_change)
         @req divides(c, p)[1] "There is an error in minimization of cubic surfaces."
         g = cubic_base_change/c
@@ -293,7 +290,7 @@ function weight0122_and0223(cubic_temp, p)
             hnf!(M)
             M = M[1:4,:]
 
-            cubic_base_change = cubic_new_basis(g, transpose(M))
+            cubic_base_change = transformation_GLn(g, transpose(M))
             c = content(cubic_base_change)
             @req divides(c, p)[1] "There is an error in minimization of cubic surfaces."
             if divides(c, p^2)
@@ -366,27 +363,4 @@ function compute_relevant_singular_points(cubic, p)
     end
   end
   return L1
-end
-
-function _ZZ_parametrization(line)
-  I = defining_ideal(line)
-  R_p = base_ring(I)
-  S, (s, t) = polynomial_ring(ZZ,  [:s,:t])
-  par = kernel(map(x-> lift(ZZ, x), transpose(matrix([[coeff(I[j], gens(R_p)[i]) for i in (1:4)] for j in [1,2]]))))
-  return [s*par[1,i] + t*par[2,i] for i in (1:4)]
-end
-
-function _parametrization(line)
-  I = defining_ideal(line)
-  R_p = base_ring(I)
-  F = base_ring(R_p)
-  S, (s, t) = polynomial_ring(F,  [:s,:t])
-  par = kernel(transpose(matrix([[coeff(I[j], gens(R_p)[i]) for i in (1:4)] for j in [1,2]])))
-  return [s*par[1,i] + t*par[2,i] for i in (1:4)]
-end
-
-
-
-function is_on_scheme(v::Vector, X::ProjectiveScheme)
-  return all([iszero(evaluate(f, v)) for f in gens(defining_ideal(X))])
 end

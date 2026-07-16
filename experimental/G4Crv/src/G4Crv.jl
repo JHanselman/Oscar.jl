@@ -343,6 +343,9 @@ function Base.hash(P::G4CrvPt, h::UInt)
   return h
 end
 =#
+include("Auxiliary.jl")
 include("Invariants.jl")
 include("Reconstruction.jl")
-include("Minimization.jl")
+include("G1Models.jl")
+include("MinimizationCubicSurface.jl")
+include("MinimizationPlaneCurves.jl")
