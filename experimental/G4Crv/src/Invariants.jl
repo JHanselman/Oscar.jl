@@ -1,9 +1,3 @@
-
-function g4_invariants(C::G4Crv{T}) where T
-  conic, cubic = equations(C)
-  return g4_invariants(conic, cubic)
-end
-
 function g4_invariants(Q::MPolyRingElem{T}, Gamma::MPolyRingElem{T} , normalize::Bool = false) where T
  	R0 = parent(Q)
 	@req (R0 == parent(Gamma)) "Q and Gamma must have the same parent"
@@ -101,7 +95,6 @@ function transvectant(f::MPolyRingElem{T}, g::MPolyRingElem{T}, r::Int, s::Int, 
     return Tfg
   end
 end
-
 
 function transvectant_sequence(Fs::Vector{S}, k::Int) where S <: Union{ZZMPolyRingElem, MPolyRingElem}
   R = parent(Fs[1])
